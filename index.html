@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Block Planner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="container">
+        <h1>Daily Planner (24h)</h1>
+        <div id="planner"></div>
+    </div>
+
+    <script>
+        const planner = document.getElementById('planner');
+
+        function getCurrentBlockIndex() {
+            const now = new Date();
+            return now.getHours() * 4 + Math.floor(now.getMinutes() / 15);
+        }
+
+        function formatHour(hour) {
+            return hour.toString().padStart(2, '0') + ':00';
+        }
+
+        function createPlanner() {
+            planner.innerHTML = ''; // Clear previous content
+            const currentBlockIndex = getCurrentBlockIndex();
+
+            for (let hour = 0; hour < 24; hour++) {
+                // Create a row for each hour
+                const hourRow = document.createElement('div');
+                hourRow.className = 'hour-row';
+
+                // Hour label
+                const label = document.createElement('div');
+                label.className = 'hour-label';
+                label.textContent = formatHour(hour);
+                hourRow.appendChild(label);
+
+                // Block row for 4 blocks (15 min each)
+                const blockRow = document.createElement('div');
+                blockRow.className = 'block-row';
+
+                for (let i = 0; i < 4; i++) {
+                    const block = document.createElement('div');
+                    block.className = 'block';
+                    const blockIndex = hour * 4 + i;
+                    const key = `planner-${hour}-${i}`;
+
+                    if (blockIndex < currentBlockIndex) {
+                        block.classList.add('past');
+                    } else {
+                        if (localStorage.getItem(key) === '1') {
+                            block.classList.add('active');
+                        }
+                        block.addEventListener('click', () => {
+                            block.classList.toggle('active');
+                            localStorage.setItem(key, block.classList.contains('active') ? '1' : '0');
+                        });
+                    }
+
+                    blockRow.appendChild(block);
+                }
+                //make current block differnt color
+                if (currentBlockIndex >= hour * 4 && currentBlockIndex < (hour + 1) * 4) {
+                    const currentBlock = blockRow.children[currentBlockIndex % 4];
+                    currentBlock.classList.add('current');
+                }
+
+
+                hourRow.appendChild(blockRow);
+                planner.appendChild(hourRow);
+            }
+        }
+
+        // Initial build
+        createPlanner();
+
+        // Update every minute
+        setInterval(() => {
+            createPlanner();
+        }, 60000);
+    </script>
+</body>
+
+</html>
